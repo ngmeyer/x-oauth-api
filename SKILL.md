@@ -1,6 +1,6 @@
 ---
 name: x-oauth-api
-description: Post to X (Twitter) using the official OAuth 1.0a API. Free tier compatible.
+description: Post to X (Twitter) using the official OAuth 1.0a API. Use when asked to "post to X", "tweet this", "post on Twitter", create threads, delete tweets, or check account info. Free tier compatible. NOT for search, mentions, or media uploads (requires Basic+ tier).
 metadata:
   { "openclaw": { "requires": { "env": ["X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"] } } }
 ---
@@ -131,3 +131,10 @@ OAuth 1.0a is handled transparently. Just provide your credentials via environme
 ## Cost
 
 Free. X API is free for basic usage. Check your app's rate limits in X Developer Portal.
+
+## Gotchas
+- **Free tier only supports posting, deleting, and account lookup** — search, mentions, and media uploads require Basic+ tier ($100/month). Don't attempt these on free tier; you'll get a clear "requires paid tier" error.
+- **"Unauthorized" after credential rotation** — X API keys are invalidated when you regenerate them in the Developer Portal. All 4 env vars must be updated together (`X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`).
+- **Trailing newlines in env vars break auth** — If you copy/paste credentials and include a trailing `\n`, OAuth signing will fail silently with a 401. Always verify with `echo -n "$X_API_KEY" | xxd` to confirm no whitespace.
+- **Rate limit 429s are per-endpoint** — Hitting the limit on `POST /2/tweets` doesn't affect `GET /2/users`. Each endpoint has its own 15-minute window. Back off only the failing endpoint.
+- **App write permissions must be set before generating tokens** — If you generate access tokens before enabling "Read and Write" in the Developer Portal, the tokens will be read-only. Regenerate tokens after changing permissions.
